@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<title>בונים אתרים עם AI בלי לדעת קוד</title>
+
+<link rel="icon" href="favicon.png" />
+<meta property="og:title" content="בונים עם AI בלי לדעת קוד" />
+<meta property="og:description" content="קהילה ישראלית לבניית אתרים וכלים לוקאליים בעזרת AI — בלי לדעת קוד, ישר מהטלפון." />
+<meta property="og:image" content="og-cover.jpg" />
+<meta name="theme-color" content="#6f61ff" />
+
+<style>
+  :root{
+    --bg:#0a0d1a; --ink:#eaf0ff; --mut:#aab3d4;
+    --card:#121528; --acc:#6f61ff; --acc2:#8aa3ff;
+    --r:18px; --gap:16px; --pad:16px;
+
+    --bar-h:78px;              /* גובה הבר העליון */
+    --bar-pad-x:12px;          /* שוליים אופקיים */
+    --cta-h:34px;              /* גובה כפתור טלגרם (קטן) */
+    --cta-ico:40px;            /* גודל אייקון טלגרם */
+    --maxw:1100px;             /* רוחב תוכן מקסימלי */
+
+    --drawer-w:min(82vw,320px); /* רוחב תפריט הצד כשפתוח */
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; color:var(--ink); background:var(--bg);
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    background-image:url('bg-vibecode.jpg'); background-size:cover; background-position:center;
+    background-attachment:fixed;
+  }
+  .scrim{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:linear-gradient(180deg,#0a0d1ae6 0%, #0a0d1acd 55%, #0a0d1a 85%);
+  }
+
+  /* ===== בר עליון ===== */
+  .floatbar{
+    position:fixed; z-index:60; inset-inline:0; top:0; height:var(--bar-h);
+    background:color-mix(in srgb, #0b0f18 78%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom:1px solid #ffffff22;
+    box-shadow:0 10px 30px #00000045;
+    transition:transform .22s ease;
+  }
+  .floatbar-inner{
+    position:relative; height:100%;
+    max-width:var(--maxw); margin-inline:auto; white-space:nowrap;
+  }
+
+  /* בורגר קטן מימין (RTL) */
+  .burger{
+    position:absolute; inset-inline-end:var(--bar-pad-x); top:50%; transform:translateY(-50%);
+    width:36px; height:36px; border-radius:10px; border:1px solid #ffffff1f;
+    background:#13182b; color:#eaf0ff; display:grid; place-items:center; cursor:pointer;
+    box-shadow:0 6px 14px #0006; transition:filter .18s ease, box-shadow .18s ease;
+  }
+  @media (min-width:900px){ .burger{ width:40px; height:40px } }
+  .burger:hover{ filter:brightness(1.08); box-shadow:0 8px 18px #0007 }
+  .burger svg{ display:block }
+
+  /* לוגו (מוזז מעט שמאלה) */
+  .floatbar .logo{ position:absolute; right:140px; top:50%; transform:translateY(-50%); }
+  .floatbar .logo img{ height:150px; width:auto; display:block }
+
+  /* כפתור טלגרם קטן משמאל */
+  .floatbar .cta{ position:absolute; inset-inline-start:var(--bar-pad-x); top:50%; transform:translateY(-50%); }
+  .cta{
+    display:inline-flex; align-items:center; gap:8px; padding-inline:12px; height:var(--cta-h);
+    border-radius:999px; background:var(--acc); color:#fff; text-decoration:none;
+    font-weight:800; letter-spacing:.2px; font-size:14px;
+    box-shadow:0 10px 18px #6f61ff40; line-height:1; user-select:none;
+    transition:filter .18s ease, box-shadow .18s ease;
+  }
+  .cta:hover{ box-shadow:0 12px 22px #6f61ff55; filter:brightness(1.04) }
+  .cta:active{ box-shadow:0 8px 16px #6f61ff44; filter:brightness(0.98) }
+  .cta img{ width:var(--cta-ico); height:var(--cta-ico); display:block }
+
+  /* גוף הדף */
+  .wrap{
+    position:relative; z-index:1;
+    padding:clamp(16px,3vw,32px);
+    max-width:var(--maxw); margin:auto;
+    padding-top:calc(var(--bar-h) + 48px);
+    transition:transform .22s ease;
+  }
+
+  /* כשהתפריט פתוח – מזיזים את כל הדף שמאלה כדי לא להסתיר תוכן */
+  body.menu-open .wrap,
+  body.menu-open .floatbar{
+    transform: translateX(calc(-1 * var(--drawer-w)));
+  }
+
+  /* --- Hero --- */
+  .hero{
+    margin:clamp(18px,4vw,36px) 0; display:grid; gap:var(--gap);
+    grid-template-columns:1.1fr .9fr;
+  }
+  @media (max-width:900px){ .hero{grid-template-columns:1fr} }
+  .hero h1{margin:0 0 10px; font-size:clamp(28px,5vw,44px); line-height:1.1}
+  .hero p{margin:0; color:var(--mut); font-size:clamp(15px,2.6vw,18px); max-width:60ch}
+
+  /* --- Cards --- */
+  .strip{display:grid; gap:var(--gap); grid-template-columns:repeat(3,1fr); margin-top:clamp(12px,2.8vw,18px)}
+  @media (max-width:900px){ .strip{grid-template-columns:1fr} }
+  .card{
+    background:linear-gradient(180deg,#121528e6,#0e1122e0);
+    border:1px solid #ffffff12; border-radius:var(--r); overflow:hidden;
+    box-shadow:0 8px 20px #00000022;
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  }
+  .card img{display:block; width:100%; aspect-ratio:16/10; object-fit:cover}
+  .card .pad{padding:var(--pad)}
+  .card h3{margin:0 0 6px; font-size:20px; font-weight:800; letter-spacing:.2px}
+  .card p{margin:0; color:var(--mut); font-size:15px; line-height:1.45}
+
+  /* --- Gallery --- */
+  .gallery{
+    display:grid; gap:12px; grid-template-columns:repeat(4,1fr);
+    margin-top:28px;
+  }
+  @media (max-width:1100px){ .gallery{grid-template-columns:repeat(3,1fr)} }
+  @media (max-width:700px){ .gallery{grid-template-columns:repeat(2,1fr)} }
+
+  .gallery .tile{
+    position:relative; border-radius:12px; overflow:hidden;
+    border:1px solid #ffffff14; background:#0f1224;
+  }
+  .gallery .tile::before{ content:""; display:block; aspect-ratio:var(--ar, 16/10) }
+  .gallery .tile img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover }
+  .gallery .tile.contain img{ object-fit:contain; background:#0f1224 }
+  .gallery .tile.landscape{ --ar:16/9 } .gallery .tile.portrait{ --ar:9/16 } .gallery .tile.square{ --ar:1/1 }
+
+  /* הכיתוב למעלה */
+  .caption{
+    position:absolute; inset:8px 8px auto 8px;
+    padding:8px 10px; border-radius:10px;
+    background:linear-gradient(180deg,#0b0f18e0,#0b0f18cc);
+    color:#eaf0ff; font-size:13px; font-weight:800;
+    border:1px solid #ffffff22;
+  }
+
+  /* --- Videos --- */
+  .videos{ margin-top:32px }
+  .videos h2{ margin:28px 0 8px }
+  .videos p{ margin:0; color:var(--mut) }
+
+  .videogrid{
+    display:grid; gap:var(--gap);
+    grid-template-columns:repeat(2,1fr);
+  }
+  @media (max-width:900px){ .videogrid{ grid-template-columns:1fr } }
+
+  .video-card{
+    background:linear-gradient(180deg,#121528e6,#0e1122e0);
+    border:1px solid #ffffff12; border-radius:var(--r);
+    box-shadow:0 8px 20px #00000022; overflow:hidden;
+  }
+
+  .video-wrap{ position:relative; background:#0f1224 }
+  .video-wrap::before{ content:""; display:block; aspect-ratio:9/16 }
+  .video-wrap.portrait::before{ aspect-ratio:9/16 }
+  .video-wrap.landscape::before{ aspect-ratio:16/9 }
+  .video-wrap.square::before{ aspect-ratio:1/1 }
+
+  .video-wrap > video, .video-wrap > img{
+    position:absolute; inset:0; width:100%; height:100%;
+    object-fit:contain; display:block; background:#0b0f18;
+  }
+  .video-pad{ padding:var(--pad) }
+  .video-card h3{ margin:0 0 6px; font-size:18px; font-weight:800 }
+  .video-card p{ margin:0; color:#aab3d4; font-size:14px; line-height:1.45 }
+
+  footer{ margin:40px 0 16px; color:#98a3c9; font-size:13px; text-align:center }
+
+  /* עזר לאנימציית טקסט מתחלף */
+  .swapfade{ transition:opacity .28s ease, transform .28s ease, filter .28s ease }
+  .swapfade.is-fading{ opacity:.0; transform:translateY(4px); filter:blur(1px) }
+  .lock-height{ display:block }
+
+  /* ======== Drawer – מוסתר לחלוטין כשהוא סגור ======== */
+  .drawer-back{
+    position:fixed; inset:0; background:#0009; z-index:59;
+    opacity:0; pointer-events:none; transition:opacity .18s ease; display:none;
+  }
+  .drawer-back.show{ opacity:1; pointer-events:auto; display:block; }
+
+  .drawer{
+    position:fixed; top:0; bottom:0; inset-inline-end:0; width:var(--drawer-w);
+    background:#0f1426;
+    transform:translate3d(110%,0,0);          /* מחוץ למסך */
+    visibility:hidden; pointer-events:none;   /* לא רואים ולא לוחצים */
+    transition:transform .22s ease;
+    z-index:61; display:flex; flex-direction:column;
+    border-inline-start:1px solid transparent; /* שלא “יבצבץ” קו */
+    will-change:transform;
+  }
+  .drawer.open{
+    transform:translate3d(0,0,0);
+    visibility:visible; pointer-events:auto;
+    border-inline-start:1px solid #ffffff22;
+  }
+  .drawer header{ display:flex; align-items:center; justify-content:space-between;
+    gap:10px; padding:14px 16px; border-bottom:1px solid #ffffff1a; }
+  .drawer header strong{ font-size:16px }
+  .drawer-close{ background:transparent; border:1px solid #ffffff22; color:#eaf0ff;
+    border-radius:8px; padding:4px 8px; cursor:pointer; }
+  .drawer nav{ padding:8px 10px 16px; overflow:auto }
+  .drawer a{
+    display:flex; align-items:center; gap:10px; padding:12px 10px; margin:6px 0; border-radius:12px;
+    text-decoration:none; color:#eaf0ff; background:#121a33; border:1px solid transparent;
+  }
+  .drawer a:hover{ border-color:#ffffff22; background:#162140 }
+
+  /* גלילה חלקה לעוגנים */
+  html{ scroll-behavior:smooth }
+</style>
+</head>
+<body>
+  <div class="scrim"></div>
+
+  <!-- ===== בר עליון ===== -->
+  <div class="floatbar">
+    <div class="floatbar-inner">
+      <button class="burger" id="burgerBtn" aria-label="פתח תפריט" aria-expanded="false" aria-controls="drawer">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path fill="currentColor" d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/>
+        </svg>
+      </button>
+
+      <div class="logo">
+        <img src="logo-vibecode.png" alt="Vibecode" />
+      </div>
+
+      <a class="cta" href="https://t.me/vibecodeisrael/7" target="_blank" rel="noopener" aria-label="לקהילה">
+        <img src="telegram.png" alt="" />
+        <span>לקהילה</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Drawer -->
+  <div class="drawer-back" id="drawerBack"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <header>
+      <strong>ניווט מהיר</strong>
+      <button class="drawer-close" id="drawerClose" aria-label="סגור תפריט">✕</button>
+    </header>
+    <nav>
+      <a href="#faq">❓ שאלות ותשובות <small>FAQ</small></a>
+      <a href="#videos-sec">🎬 מדריך וידאו</a>
+      <a href="#gallery-sec">🖼️ אתרים מהקהילה</a>
+      <a href="#method">🧭 השיטה</a>
+      <a href="#examples-sec">💡 דוגמאות</a>
+      <a href="#top">⬆️ לראש הדף</a>
+    </nav>
+  </aside>
+
+  <div class="wrap" id="top">
+
+    <section class="hero" id="method">
+      <div>
+        <!-- ✅ כותרת קבועה, לא מתחלפת -->
+        <h1 id="heroH1">בונים אתר כמו זה — תוך דקות, בלי לדעת קוד</h1>
+        <p id="heroP">מצטרפים לקהילה, מתארים מה רוצים — מקבלים קוד מוכן ורצים מהטלפון עם Koder.</p>
+
+        <div class="strip">
+          <div class="card focus-zoom">
+            <img src="people-team.jpg" alt="צוות קוד" loading="lazy">
+            <div class="pad">
+              <h3>AI לצידך</h3>
+              <p>אתה כותב רעיון — ה-AI מייצר את הקוד.</p>
+            </div>
+          </div>
+          <div class="card focus-zoom">
+            <img src="people-blonde-senior.jpg" alt="שילוב דורות בקוד" loading="lazy">
+            <div class="pad">
+              <h3>קהילה יוצרת</h3>
+              <p>שואלים, משתפים ומתקדמים יחד.</p>
+            </div>
+          </div>
+          <div class="card focus-zoom">
+            <img src="people-grandma-kid.jpg" alt="לימוד עם סבתא ונכד" loading="lazy">
+            <div class="pad">
+              <h3>מהר לטלפון</h3>
+              <p>עמוד נחיתה או כלי קטן — רץ מקומית מיד.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card focus-zoom">
+        <img src="bg-vibecode.jpg" alt="רקע וייב" loading="lazy">
+        <div class="pad">
+          <h3>מה השיטה?</h3>
+          <p>מבקשים מ-ChatGPT לבנות אתר HTML מקומי, מעתיקים את הקוד ומדביקים ב-Koder — וזה עובד בנייד.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ✅ קופסת דוגמאות מתחלפות (מופיעה למטה יותר) -->
+    <section class="card" id="examples-sec" style="margin-top:16px;">
+      <div class="pad">
+        <h3 style="margin:0 0 8px">מה אפשר לבנות? דוגמאות אמיתיות</h3>
+        <p id="examplesLine" class="swapfade lock-height" style="margin:0; color:var(--mut); font-size:16px;">
+          בעל מוסך? תן לילדים שלך לבנות עבורך אתר תדמית יוקרתי — היום.
+        </p>
+      </div>
+    </section>
+
+    <section id="gallery-sec">
+      <h2 style="margin:28px 0 8px">העבודות של הקהילה</h2>
+      <p style="margin:0; color:var(--mut)">הכול נבנה בעזרת AI — בלי לדעת שורת קוד אחת.</p>
+      <div class="gallery" id="gallery"></div>
+    </section>
+
+    <!-- מדריך וידאו -->
+    <section class="videos" id="videos-sec">
+      <h2>מדריך וידאו</h2>
+      <p style="color:#aab3d4">איך להוריד את Koder ולהריץ HTML מהטלפון.</p>
+
+      <div class="videogrid">
+        <div class="video-card">
+          <div class="video-wrap" id="tutorialWrap">
+            <video id="tutorialVideo"
+                   playsinline webkit-playsinline
+                   controls preload="metadata">
+              <source src="gallery/Tutorial-01.mov" type="video/quicktime">
+              הדפדפן לא תומך ב-MOV. <a href="gallery/Tutorial-01.mov">פתח/י את הקובץ</a>.
+            </video>
+          </div>
+          <div class="video-pad">
+            <h3>התקנת Koder ופתיחת HTML</h3>
+            <p>מדריך קצר: איך להוריד את Koder ולהריץ קבצי HTML ישירות מהטלפון.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- שאלות ותשובות -->
+    <section id="faq" style="margin-top:36px">
+      <h2>שאלות ותשובות</h2>
+      <div class="card" style="padding:0">
+        <details open style="padding:16px 20px; border-bottom:1px solid #ffffff14">
+          <summary style="cursor:pointer; font-weight:800">האם זה עובד גם בלי אינטרנט?</summary>
+          <div style="color:#aab3d4; margin-top:8px">כן. האתרים הם קבצי HTML מקומיים. צריך אינטרנט רק כדי לקבל את הקוד מ-ChatGPT בפעם הראשונה.</div>
+        </details>
+        <details style="padding:16px 20px; border-bottom:1px solid #ffffff14">
+          <summary style="cursor:pointer; font-weight:800">איפה שמים את הקבצים באייפון?</summary>
+          <div style="color:#aab3d4; margin-top:8px">בתוך Koder בתיקייה שתבחר/י. פותחים את ה-HTML ומריצים.</div>
+        </details>
+        <details style="padding:16px 20px">
+          <summary style="cursor:pointer; font-weight:800">אפשר לשתף עבודות בקהילה?</summary>
+          <div style="color:#aab3d4; margin-top:8px">בטח. לוחצים על “לקהילה” למעלה, שולחים צילום מסך וקובץ ה-HTML.</div>
+        </details>
+      </div>
+    </section>
+
+    <footer>© Vibecode.co.il — בנוי מקומית, רץ מקומית. אין שרת, יש קהילה.</footer>
+  </div>
+
+<script>
+  /* ===== Drawer ===== */
+  const burgerBtn   = document.getElementById('burgerBtn');
+  const drawer      = document.getElementById('drawer');
+  const drawerBack  = document.getElementById('drawerBack');
+  const drawerClose = document.getElementById('drawerClose');
+
+  function openDrawer(){
+    drawer.classList.add('open');
+    drawer.setAttribute('aria-hidden','false');
+    burgerBtn.setAttribute('aria-expanded','true');
+    drawerBack.classList.add('show');
+    document.body.classList.add('menu-open');           // מזיז את הדף שמאלה
+    document.documentElement.style.overflow = 'hidden'; // חוסם גלילה מאחור
+  }
+  function closeDrawer(){
+    drawer.classList.remove('open');
+    drawer.setAttribute('aria-hidden','true');
+    burgerBtn.setAttribute('aria-expanded','false');
+    drawerBack.classList.remove('show');
+    document.body.classList.remove('menu-open');        // מחזיר את הדף
+    document.documentElement.style.overflow = '';
+  }
+
+  burgerBtn?.addEventListener('click', openDrawer);
+  drawerBack?.addEventListener('click', closeDrawer);
+  drawerClose?.addEventListener('click', closeDrawer);
+  drawer?.querySelectorAll('a').forEach(a=> a.addEventListener('click', closeDrawer));
+  window.addEventListener('keydown', e=>{ if(e.key==='Escape') closeDrawer(); });
+
+  /* ===== גלריה (דמו) ===== */
+  const galleryDefaults = [
+    {src:'gallery/site-04.jpg', title:'יומן עברי לועזי'},
+    {src:'gallery/site-01.jpg', title:'המרת מטבע'},
+    {src:'gallery/site-02.jpg', title:'צייר'},
+    {src:'gallery/site-03.jpg', title:'לימוד קריאה'}
+  ];
+  const g = document.getElementById('gallery');
+  function makeTile(src, cls, title){
+    const tile = document.createElement('div');
+    tile.className = 'tile ' + cls;
+    const img = document.createElement('img'); img.loading='lazy'; img.alt=title||'אתר מהקהילה'; img.src=src;
+    const cap = document.createElement('div'); cap.className='caption'; cap.textContent=title||'';
+    tile.appendChild(img); tile.appendChild(cap); g.appendChild(tile);
+  }
+  function addImageSmart(src,title){
+    const p=new Image();
+    p.onload=function(){
+      const w=this.naturalWidth||1,h=this.naturalHeight||1;
+      const cls=(Math.abs(w-h)<=2)?'square':(w>h?'landscape':'portrait');
+      makeTile(src,cls,title);
+    };
+    p.onerror=function(){ makeTile(src,'landscape',title); };
+    p.src=src;
+  }
+  galleryDefaults.forEach(({src,title})=> addImageSmart(src,title));
+
+  /* ===== וידאו: יחס מסך ===== */
+  (function videoAspect(){
+    const wrap = document.getElementById('tutorialWrap');
+    const vid  = document.getElementById('tutorialVideo');
+    if(!wrap || !vid) return;
+    function updateAspect(){
+      const w = vid.videoWidth || 0, h = vid.videoHeight || 0;
+      if (!w || !h) return;
+      wrap.classList.remove('portrait','landscape','square');
+      if (h > w) wrap.classList.add('portrait'); else if (w > h) wrap.classList.add('landscape'); else wrap.classList.add('square');
+    }
+    vid.addEventListener('loadedmetadata', updateAspect);
+    if (vid.readyState >= 1) updateAspect();
+  })();
+
+  /* ===== כותרת ה-Hero קבועה – אין רוטציה ===== */
+  // השארנו את ה-H1 וה-P סטטיים לפי הבקשה.
+
+  /* ===== דוגמאות מתחלפות למטה ===== */
+  (function rotatingExamples(){
+    const el = document.getElementById('examplesLine');
+    if(!el) return;
+
+    const lines = [
+      'בעל מוסך? תן לילדים שלך לבנות עבורך אתר תדמית יוקרתי — היום.',
+      'מאפייה שכונתית? עמוד הזמנות יומי עם תפריט מתעדכן — תוך דקות.',
+      'מדריכת יוגה? מערכת שיעורים ולוח זמנים שנפתחים בלחיצה.',
+      'מאמן/ת כושר? דף נחיתה עם טופס לידים ותמחור חבילות.',
+      'ועד בית? אתר בניין עם טפסים, קבצים ועידכונים לדיירים.',
+      'צלם/ת אירועים? גלריית עבודות מרהיבה עם שיתוף מהיר לוואטסאפ.',
+      'קוסמטיקאית? תיאום תורים, מפת הגעה וקופונים ללקוחות חוזרים.',
+      'נגר/ית? קטלוג עבודות עם יצירת קשר בלחיצה — מהנייד.',
+      'חנות יד שנייה? רשימת מוצרים פשוטה עם תמונות ומחירים.',
+      'מדריך/ת פרטית? עמוד “עליי”, מחירים וטופס יצירת קשר מיידי.'
+    ];
+
+    // נועלים גובה כדי שלא "יקפוץ" כשמשתנה הטקסט
+    function lockMaxHeight(node, options){
+      const probe = document.createElement('div');
+      const cs = getComputedStyle(node);
+      probe.style.cssText = `
+        position:absolute; visibility:hidden; z-index:-1; inset:auto;
+        width:${node.clientWidth || node.offsetWidth || 0}px;
+        font:${cs.fontStyle} ${cs.fontVariant} ${cs.fontWeight} ${cs.fontSize}/${cs.lineHeight} ${cs.fontFamily};
+      `;
+      document.body.appendChild(probe);
+      let maxH = node.offsetHeight;
+      options.forEach(t=>{ probe.textContent = t; maxH = Math.max(maxH, probe.offsetHeight); });
+      document.body.removeChild(probe);
+      node.style.minHeight = maxH + 'px';
+    }
+    lockMaxHeight(el, lines);
+
+    let i = 0;
+    setInterval(()=>{
+      el.classList.add('is-fading');
+      setTimeout(()=>{
+        i = (i + 1) % lines.length;
+        el.textContent = lines[i];
+        el.classList.remove('is-fading');
+      }, 220);
+    }, 4200);
+  })();
+</script>
+</body>
+</html>
