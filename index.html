@@ -4,11 +4,11 @@
 <meta charset="utf-8" />
 <meta name="viewport"
       content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-<title>בונים אתרים עם AI בלי לדעת קוד</title>
+<title>בונים אתרים עם AI — ללא ידע בשפת תכנות</title>
 
 <link rel="icon" href="favicon.png" />
-<meta property="og:title" content="בונים עם AI בלי לדעת קוד" />
-<meta property="og:description" content="קהילה ישראלית לבניית אתרים וכלים לוקאליים בעזרת AI — בלי לדעת קוד, ישר מהטלפון." />
+<meta property="og:title" content="בונים עם AI — ללא ידע בשפת תכנות" />
+<meta property="og:description" content="קהילה ישראלית לבניית אתרים וכלים לוקאליים בעזרת AI — ללא ידע בשפת תכנות, ישר מהטלפון." />
 <meta property="og:image" content="og-cover.jpg" />
 <meta name="theme-color" content="#6f61ff" />
 
@@ -16,387 +16,545 @@
   :root{
     --bg:#0a0d1a; --ink:#eaf0ff; --mut:#aab3d4;
     --card:#121528; --acc:#6f61ff; --acc2:#8aa3ff;
+
     --r:18px; --gap:16px; --pad:16px;
+    --bar-h:78px; --bar-pad-x:12px;
 
-    --bar-h:78px;              /* גובה הבר העליון */
-    --bar-pad-x:12px;          /* שוליים אופקיים */
-    --cta-h:34px;              /* גובה כפתור טלגרם (קטן) */
-    --cta-ico:40px;            /* גודל אייקון טלגרם */
-    --maxw:1100px;             /* רוחב תוכן מקסימלי */
+    --cta-h:34px; --cta-ico:40px;
+    --maxw:1100px; --drawer-w:min(82vw,320px);
+    --drawer-ease:cubic-bezier(.22,.61,.36,1);
+    --drawer-dur:420ms; --backdrop-dur:260ms;
 
-    --drawer-w:min(82vw,320px); /* רוחב תפריט הצד כשפתוח */
+    --anchor-offset: calc(var(--bar-h) + 14px);
+
+    /* שליטה גלובלית על גודל הטקסט */
+    --zoom:1;
+
+    /* גבולות וצללים לפי דיו/רקע */
+    --bd-weak: color-mix(in srgb, var(--ink) 12%, transparent);
+    --bd-med:  color-mix(in srgb, var(--ink) 22%, transparent);
+    --bd-strong: color-mix(in srgb, var(--ink) 28%, transparent);
+    --shadow-1: 0 8px 20px rgba(0,0,0,.22);
+    --shadow-2: 0 10px 30px rgba(0,0,0,.27);
   }
 
+  /* קנה המידה לטקסט */
+  html{ font-size: calc(100% * var(--zoom)); }
   *{box-sizing:border-box}
   html,body{height:100%}
+
   body{
     margin:0; color:var(--ink); background:var(--bg);
-    font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans Hebrew","Assistant","Rubik";
     -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
     background-image:url('bg-vibecode.jpg'); background-size:cover; background-position:center;
     background-attachment:fixed;
   }
+
   .scrim{
     position:fixed; inset:0; z-index:0; pointer-events:none;
-    background:linear-gradient(180deg,#0a0d1ae6 0%, #0a0d1acd 55%, #0a0d1a 85%);
+    background:linear-gradient(180deg, color-mix(in srgb, var(--bg) 90%, transparent) 0%,
+                                        color-mix(in srgb, var(--bg) 80%, transparent) 55%,
+                                        var(--bg) 85%);
   }
 
   /* ===== בר עליון ===== */
   .floatbar{
     position:fixed; z-index:60; inset-inline:0; top:0; height:var(--bar-h);
-    background:color-mix(in srgb, #0b0f18 78%, transparent);
+    background:color-mix(in srgb, var(--bg) 78%, transparent);
     backdrop-filter: blur(8px);
-    border-bottom:1px solid #ffffff22;
-    box-shadow:0 10px 30px #00000045;
-    transition:transform .22s ease;
+    border-bottom:1px solid var(--bd-med);
+    box-shadow:var(--shadow-2);
   }
-  .floatbar-inner{
-    position:relative; height:100%;
-    max-width:var(--maxw); margin-inline:auto; white-space:nowrap;
-  }
+  .floatbar-inner{ position:relative; height:100%; max-width:var(--maxw); margin-inline:auto }
 
-  /* בורגר קטן מימין (RTL) */
-  .burger{
-    position:absolute; inset-inline-end:var(--bar-pad-x); top:50%; transform:translateY(-50%);
-    width:36px; height:36px; border-radius:10px; border:1px solid #ffffff1f;
-    background:#13182b; color:#eaf0ff; display:grid; place-items:center; cursor:pointer;
-    box-shadow:0 6px 14px #0006; transition:filter .18s ease, box-shadow .18s ease;
+  /* לוגו – ימין */
+  .logo{
+    position:absolute; inset-inline-start:var(--bar-pad-x); inset-block-start:50%;
+    transform:translateY(-50%);
   }
-  @media (min-width:900px){ .burger{ width:40px; height:40px } }
-  .burger:hover{ filter:brightness(1.08); box-shadow:0 8px 18px #0007 }
+  .logo img{ height:9.375rem; width:auto; display:block } /* 150px -> rem */
+  @media (max-width:480px){ .logo img{ height:7.5rem } }   /* 120px -> rem */
+
+  /* בורגר – שמאל */
+  .burger{
+    position:absolute; inset-inline-end:var(--bar-pad-x); inset-block-start:50%;
+    transform:translateY(-50%);
+    inline-size:2.5rem; block-size:2.5rem; /* 40px */
+    border-radius:10px;
+    border:1px solid var(--bd-weak); background:#13182b; color:var(--ink);
+    display:grid; place-items:center; cursor:pointer;
+    box-shadow:0 6px 14px rgba(0,0,0,.4);
+    transition:filter .18s ease, box-shadow .18s ease;
+    z-index:62;
+  }
+  @media (max-width:899px){ .burger{ inline-size:2.25rem; block-size:2.25rem } } /* 36px */
+  .burger:hover{ filter:brightness(1.08); box-shadow:0 8px 18px rgba(0,0,0,.44) }
   .burger svg{ display:block }
 
-  /* לוגו (מוזז מעט שמאלה) */
-  .floatbar .logo{ position:absolute; right:140px; top:50%; transform:translateY(-50%); }
-  .floatbar .logo img{ height:150px; width:auto; display:block }
-
-  /* כפתור טלגרם קטן משמאל */
-  .floatbar .cta{ position:absolute; inset-inline-start:var(--bar-pad-x); top:50%; transform:translateY(-50%); }
-  .cta{
-    display:inline-flex; align-items:center; gap:8px; padding-inline:12px; height:var(--cta-h);
-    border-radius:999px; background:var(--acc); color:#fff; text-decoration:none;
-    font-weight:800; letter-spacing:.2px; font-size:14px;
-    box-shadow:0 10px 18px #6f61ff40; line-height:1; user-select:none;
-    transition:filter .18s ease, box-shadow .18s ease;
+  /* ✕ – מתמקם על הבורגר */
+  .close-fab{
+    position:fixed; inline-size:2.25rem; block-size:2.25rem; border-radius:10px;
+    border:1px solid var(--bd-weak); background:#13182b; color:var(--ink);
+    display:none; place-items:center; cursor:pointer;
+    box-shadow:0 6px 14px rgba(0,0,0,.4); transition:filter .18s ease, box-shadow .18s ease;
+    z-index:63; font-weight:700; font-size:1.125rem; line-height:1;
   }
-  .cta:hover{ box-shadow:0 12px 22px #6f61ff55; filter:brightness(1.04) }
-  .cta:active{ box-shadow:0 8px 16px #6f61ff44; filter:brightness(0.98) }
-  .cta img{ width:var(--cta-ico); height:var(--cta-ico); display:block }
 
   /* גוף הדף */
   .wrap{
     position:relative; z-index:1;
-    padding:clamp(16px,3vw,32px);
+    padding:clamp(1rem,3vw,2rem);
     max-width:var(--maxw); margin:auto;
-    padding-top:calc(var(--bar-h) + 48px);
-    transition:transform .22s ease;
-  }
-
-  /* כשהתפריט פתוח – מזיזים את כל הדף שמאלה כדי לא להסתיר תוכן */
-  body.menu-open .wrap,
-  body.menu-open .floatbar{
-    transform: translateX(calc(-1 * var(--drawer-w)));
+    padding-top:calc(var(--bar-h) + clamp(.5rem, 1.5vh, 1rem));
   }
 
   /* --- Hero --- */
   .hero{
-    margin:clamp(18px,4vw,36px) 0; display:grid; gap:var(--gap);
+    margin:clamp(1.125rem,4vw,2.25rem) 0; display:grid; gap:var(--gap);
     grid-template-columns:1.1fr .9fr;
   }
   @media (max-width:900px){ .hero{grid-template-columns:1fr} }
-  .hero h1{margin:0 0 10px; font-size:clamp(28px,5vw,44px); line-height:1.1}
-  .hero p{margin:0; color:var(--mut); font-size:clamp(15px,2.6vw,18px); max-width:60ch}
+  .hero h1{margin:0 0 .625rem; font-size:clamp(1.75rem,5vw,2.75rem); line-height:1.1}
+  .hero p{margin:0; color:var(--mut); font-size:clamp(.9375rem,2.6vw,1.125rem); max-width:60ch}
 
   /* --- Cards --- */
-  .strip{display:grid; gap:var(--gap); grid-template-columns:repeat(3,1fr); margin-top:clamp(12px,2.8vw,18px)}
+  .strip{
+    display:grid; gap:var(--gap); grid-template-columns:repeat(3,1fr);
+    margin-top:clamp(.75rem,2.8vw,1.125rem)
+  }
   @media (max-width:900px){ .strip{grid-template-columns:1fr} }
   .card{
-    background:linear-gradient(180deg,#121528e6,#0e1122e0);
-    border:1px solid #ffffff12; border-radius:var(--r); overflow:hidden;
-    box-shadow:0 8px 20px #00000022;
-    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    background:linear-gradient(180deg,
+      color-mix(in srgb, var(--card) 92%, transparent),
+      color-mix(in srgb, var(--card) 100%, transparent));
+    border:1px solid var(--bd-weak); border-radius:var(--r); overflow:hidden;
+    box-shadow:var(--shadow-1);
   }
   .card img{display:block; width:100%; aspect-ratio:16/10; object-fit:cover}
   .card .pad{padding:var(--pad)}
-  .card h3{margin:0 0 6px; font-size:20px; font-weight:800; letter-spacing:.2px}
-  .card p{margin:0; color:var(--mut); font-size:15px; line-height:1.45}
+  .card h3{margin:0 0 .375rem; font-size:1.25rem; font-weight:800; letter-spacing:.2px}
+  .card p{margin:0; color:var(--mut); font-size:.9375rem; line-height:1.45}
 
   /* --- Gallery --- */
   .gallery{
-    display:grid; gap:12px; grid-template-columns:repeat(4,1fr);
-    margin-top:28px;
+    display:grid; gap:.75rem; grid-template-columns:repeat(4,1fr);
+    margin-top:1.75rem;
   }
   @media (max-width:1100px){ .gallery{grid-template-columns:repeat(3,1fr)} }
   @media (max-width:700px){ .gallery{grid-template-columns:repeat(2,1fr)} }
-
-  .gallery .tile{
-    position:relative; border-radius:12px; overflow:hidden;
-    border:1px solid #ffffff14; background:#0f1224;
-  }
+  .gallery .tile{ position:relative; border-radius:12px; overflow:hidden; border:1px solid var(--bd-weak); background:#0f1224; }
   .gallery .tile::before{ content:""; display:block; aspect-ratio:var(--ar, 16/10) }
   .gallery .tile img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover }
   .gallery .tile.contain img{ object-fit:contain; background:#0f1224 }
   .gallery .tile.landscape{ --ar:16/9 } .gallery .tile.portrait{ --ar:9/16 } .gallery .tile.square{ --ar:1/1 }
 
-  /* הכיתוב למעלה */
   .caption{
     position:absolute; inset:8px 8px auto 8px;
-    padding:8px 10px; border-radius:10px;
-    background:linear-gradient(180deg,#0b0f18e0,#0b0f18cc);
-    color:#eaf0ff; font-size:13px; font-weight:800;
-    border:1px solid #ffffff22;
+    padding:.5rem .625rem; border-radius:10px;
+    background:linear-gradient(180deg,
+      color-mix(in srgb, var(--bg) 88%, transparent),
+      color-mix(in srgb, var(--bg) 80%, transparent));
+    color:var(--ink); font-size:.8125rem; font-weight:800;
+    border:1px solid var(--bd-med);
   }
 
-  /* --- Videos --- */
-  .videos{ margin-top:32px }
-  .videos h2{ margin:28px 0 8px }
-  .videos p{ margin:0; color:var(--mut) }
-
-  .videogrid{
-    display:grid; gap:var(--gap);
-    grid-template-columns:repeat(2,1fr);
-  }
-  @media (max-width:900px){ .videogrid{ grid-template-columns:1fr } }
-
-  .video-card{
-    background:linear-gradient(180deg,#121528e6,#0e1122e0);
-    border:1px solid #ffffff12; border-radius:var(--r);
-    box-shadow:0 8px 20px #00000022; overflow:hidden;
-  }
-
-  .video-wrap{ position:relative; background:#0f1224 }
-  .video-wrap::before{ content:""; display:block; aspect-ratio:9/16 }
-  .video-wrap.portrait::before{ aspect-ratio:9/16 }
-  .video-wrap.landscape::before{ aspect-ratio:16/9 }
-  .video-wrap.square::before{ aspect-ratio:1/1 }
-
-  .video-wrap > video, .video-wrap > img{
-    position:absolute; inset:0; width:100%; height:100%;
-    object-fit:contain; display:block; background:#0b0f18;
-  }
-  .video-pad{ padding:var(--pad) }
-  .video-card h3{ margin:0 0 6px; font-size:18px; font-weight:800 }
-  .video-card p{ margin:0; color:#aab3d4; font-size:14px; line-height:1.45 }
-
-  footer{ margin:40px 0 16px; color:#98a3c9; font-size:13px; text-align:center }
-
-  /* עזר לאנימציית טקסט מתחלף */
-  .swapfade{ transition:opacity .28s ease, transform .28s ease, filter .28s ease }
-  .swapfade.is-fading{ opacity:.0; transform:translateY(4px); filter:blur(1px) }
-  .lock-height{ display:block }
-
-  /* ======== Drawer – מוסתר לחלוטין כשהוא סגור ======== */
+  /* --- Drawer (שמאל) --- */
   .drawer-back{
     position:fixed; inset:0; background:#0009; z-index:59;
-    opacity:0; pointer-events:none; transition:opacity .18s ease; display:none;
+    opacity:0; pointer-events:none; transition:opacity var(--backdrop-dur) ease;
   }
-  .drawer-back.show{ opacity:1; pointer-events:auto; display:block; }
+  .drawer-back.show{ opacity:1; pointer-events:auto; }
 
   .drawer{
-    position:fixed; top:0; bottom:0; inset-inline-end:0; width:var(--drawer-w);
-    background:#0f1426;
-    transform:translate3d(110%,0,0);          /* מחוץ למסך */
-    visibility:hidden; pointer-events:none;   /* לא רואים ולא לוחצים */
-    transition:transform .22s ease;
+    position:fixed; top:0; bottom:0;
+    inset-inline-end:0; inset-inline-start:auto; /* לשמאל */
+    width:var(--drawer-w);
+    background:linear-gradient(180deg,
+      color-mix(in srgb, var(--card) 95%, transparent),
+      color-mix(in srgb, var(--card) 100%, transparent));
+    transform:translateX(-110%);
+    visibility:hidden; pointer-events:none;
+    transition:transform var(--drawer-dur) var(--drawer-ease);
     z-index:61; display:flex; flex-direction:column;
-    border-inline-start:1px solid transparent; /* שלא “יבצבץ” קו */
-    will-change:transform;
+    border-inline-end:1px solid var(--bd-med);
+    box-shadow:20px 0 50px rgba(0,0,0,.5);
   }
   .drawer.open{
-    transform:translate3d(0,0,0);
+    transform:translateX(0);
     visibility:visible; pointer-events:auto;
-    border-inline-start:1px solid #ffffff22;
   }
-  .drawer header{ display:flex; align-items:center; justify-content:space-between;
-    gap:10px; padding:14px 16px; border-bottom:1px solid #ffffff1a; }
-  .drawer header strong{ font-size:16px }
-  .drawer-close{ background:transparent; border:1px solid #ffffff22; color:#eaf0ff;
-    border-radius:8px; padding:4px 8px; cursor:pointer; }
-  .drawer nav{ padding:8px 10px 16px; overflow:auto }
+  .drawer header{ display:none }
+  .drawer nav{ padding:.75rem; overflow:auto }
   .drawer a{
-    display:flex; align-items:center; gap:10px; padding:12px 10px; margin:6px 0; border-radius:12px;
-    text-decoration:none; color:#eaf0ff; background:#121a33; border:1px solid transparent;
+    display:flex; align-items:center; gap:.625rem;
+    padding:.875rem .75rem; margin:.25rem 0; border-radius:12px;
+    text-decoration:none; color:var(--ink); background:transparent;
+    border:1px solid var(--bd-weak);
+    font-weight:700; letter-spacing:.1px; font-size:1rem;
   }
-  .drawer a:hover{ border-color:#ffffff22; background:#162140 }
+  .drawer a:hover{ background:color-mix(in srgb, var(--card) 84%, transparent); border-color:var(--bd-med) }
+  .drawer a:active{ filter:brightness(.98) }
 
-  /* גלילה חלקה לעוגנים */
+  .drawer a:focus-visible, .close-fab:focus-visible, .burger:focus-visible,
+  .a11y-btn:focus-visible, .a11y-close:focus-visible{
+    outline:2px solid var(--acc); outline-offset:2px;
+  }
+
+  /* גלילה חלקה לעוגנים + Offset */
   html{ scroll-behavior:smooth }
+  [id]{ scroll-margin-top: var(--anchor-offset); }
+  #top{ scroll-margin-top: 0; }
+
+  /* ===== כפתור קהילה צף ===== */
+  .cta-fab{
+    position:fixed; left:50%;
+    bottom:calc(env(safe-area-inset-bottom, 0px) + 16px);
+    transform:translateX(-50%);
+    display:inline-flex; align-items:center; gap:.5rem;
+    padding-inline:.875rem; height:var(--cta-h);
+    border-radius:999px;
+    background:var(--acc); color:#fff; text-decoration:none;
+    font-weight:800; letter-spacing:.2px; font-size:.875rem; line-height:1;
+    box-shadow:0 12px 24px #6f61ff55, 0 2px 6px rgba(0,0,0,.5);
+    user-select:none;
+    transition:transform .18s ease, filter .18s ease, box-shadow .18s ease;
+    z-index:58;
+  }
+  .cta-fab:hover{ filter:brightness(1.04); box-shadow:0 14px 28px #6f61ff66, 0 3px 8px rgba(0,0,0,.6) }
+  .cta-fab:active{ transform:translateX(-50%) scale(.98) }
+  .cta-fab img{ width:var(--cta-ico); height:var(--cta-ico); display:block }
+  @media (max-width:480px){ .cta-fab{ padding-inline:.75rem; font-size:.8125rem } }
+
+  /* ===== נגישות: “דלג לתוכן”, כפתור ופאנל ===== */
+  .skip-link{
+    position:absolute; inset-inline-end:1rem; top:-100px;
+    background:#000; color:#fff; padding:.625rem .875rem; border-radius:10px;
+    z-index:100; text-decoration:none; border:2px solid #fff; font-size:1rem;
+  }
+  .skip-link:focus{ top:1rem }
+
+  .a11y-btn{
+    position:fixed; inset-inline-start:16px; inset-block:50%;
+    transform:translateY(-50%);
+    inline-size:3rem; block-size:3rem;
+    border-radius:12px; border:1px solid var(--bd-weak);
+    background:#13182b; color:var(--ink);
+    display:grid; place-items:center; cursor:pointer;
+    box-shadow:0 10px 22px rgba(0,0,0,.45);
+    z-index:64;
+  }
+  .a11y-btn:hover{ filter:brightness(1.06) }
+
+  .a11y-backdrop{
+    position:fixed; inset:0; background:#0009; z-index:63;
+    opacity:0; pointer-events:none; transition:opacity var(--backdrop-dur) ease;
+  }
+  .a11y-backdrop.show{ opacity:1; pointer-events:auto }
+
+  .a11y-panel{
+    position:fixed; top:0; bottom:0; inset-inline-start:0;
+    width:min(86vw,360px);
+    background:linear-gradient(180deg,
+      color-mix(in srgb, var(--card) 95%, transparent),
+      color-mix(in srgb, var(--card) 100%, transparent));
+    border-inline-start:1px solid var(--bd-med);
+    box-shadow:-20px 0 50px rgba(0,0,0,.5);
+    transform:translateX(110%);
+    visibility:hidden; pointer-events:none;
+    transition:transform var(--drawer-dur) var(--drawer-ease);
+    z-index:65; display:flex; flex-direction:column;
+  }
+  .a11y-panel.open{ transform:translateX(0); visibility:visible; pointer-events:auto }
+
+  .a11y-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:.875rem 1rem; border-bottom:1px solid var(--bd-med);
+  }
+  .a11y-title{ margin:0; font-size:1.125rem }
+  .a11y-close{
+    inline-size:2.25rem; block-size:2.25rem; border-radius:10px;
+    border:1px solid var(--bd-weak); background:#13182b; color:var(--ink);
+    display:grid; place-items:center; cursor:pointer;
+  }
+  .a11y-body{ padding:.75rem .875rem; overflow:auto; font-size:1rem }
+  .a11y-group{ border:1px solid var(--bd-weak); border-radius:12px; padding:.75rem; margin:.625rem 0 }
+  .a11y-group h3{ margin:0 0 .5rem; font-size:1rem }
+  .a11y-row{ display:flex; gap:.5rem; flex-wrap:wrap }
+  .a11y-btn2{
+    appearance:none; border:1px solid var(--bd-med); background:#13182b; color:var(--ink);
+    padding:.625rem .75rem; border-radius:10px; cursor:pointer; font-weight:700; font-size:.9375rem;
+  }
+  .a11y-switch{ display:flex; align-items:center; gap:.5rem; margin:.375rem 0; font-size:.9375rem }
+  .a11y-switch input{ inline-size:1.2rem; block-size:1.2rem }
+
+  .a11y-footer{ padding:.75rem .875rem; border-top:1px solid var(--bd-med); display:flex; justify-content:space-between; gap:.5rem }
+  .a11y-link{ color:var(--acc2); text-decoration:underline; font-size:.9375rem }
+
+  /* ===== מצבי נגישות ===== */
+  body.a11y-hc{
+    --bg:#000; --ink:#fff; --mut:#e6e6e6;
+    --card:#000; --acc:#00e0ff; --acc2:#00a8ff;
+    --bd-weak: color-mix(in srgb, var(--ink) 35%, transparent);
+    --bd-med:  color-mix(in srgb, var(--ink) 55%, transparent);
+    --bd-strong: color-mix(in srgb, var(--ink) 70%, transparent);
+  }
+  body.a11y-hc{ background-image:none; } /* בלי תמונת רקע במצב HC */
+
+  body.a11y-underline a{ text-decoration:underline !important }
+  body.a11y-focus :focus{ outline:3px solid var(--acc) !important; outline-offset:2px !important }
+  body.a11y-rm *{ transition:none !important; animation:none !important }
+  body.a11y-dys{ font-family:"OpenDyslexic","OpenDyslexic Alta", system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans Hebrew" !important }
+
+  footer{ margin-top:2rem; color:var(--mut); font-size:.9375rem }
 </style>
 </head>
 <body>
+  <!-- דלג לתוכן -->
+  <a href="#main" class="skip-link">דלג לתוכן המרכזי</a>
+
   <div class="scrim"></div>
 
   <!-- ===== בר עליון ===== -->
   <div class="floatbar">
     <div class="floatbar-inner">
+      <!-- לוגו בימין -->
+      <a class="logo" href="#top" aria-label="Vibecode">
+        <img src="logo-vibecode.png" alt="Vibecode" />
+      </a>
+
+      <!-- בורגר בשמאל -->
       <button class="burger" id="burgerBtn" aria-label="פתח תפריט" aria-expanded="false" aria-controls="drawer">
         <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
           <path fill="currentColor" d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/>
         </svg>
       </button>
-
-      <div class="logo">
-        <img src="Logo.png" alt="Vibecode" />
-      </div>
-
-      <a class="cta" href="https://t.me/vibecodeisrael/7" target="_blank" rel="noopener" aria-label="לקהילה">
-        <img src="telegram.png" alt="" />
-        <span>לקהילה</span>
-      </a>
     </div>
   </div>
 
-  <!-- Drawer -->
+  <!-- שכבת רקע -->
   <div class="drawer-back" id="drawerBack"></div>
+
+  <!-- Drawer (נכנס/יוצא משמאל) -->
   <aside class="drawer" id="drawer" aria-hidden="true">
-    <header>
-      <strong>ניווט מהיר</strong>
-      <button class="drawer-close" id="drawerClose" aria-label="סגור תפריט">✕</button>
-    </header>
+    <header></header>
     <nav>
-      <a href="#faq">❓ שאלות ותשובות <small>FAQ</small></a>
-      <a href="#videos-sec">🎬 מדריך וידאו</a>
-      <a href="#gallery-sec">🖼️ אתרים מהקהילה</a>
-      <a href="#method">🧭 השיטה</a>
-      <a href="#examples-sec">💡 דוגמאות</a>
-      <a href="#top">⬆️ לראש הדף</a>
+      <a href="#how-method">השיטה</a>
+      <a href="#about">מי אנחנו</a>
+      <a href="#gallery-sec">העבודות של הקהילה</a>
+      <a href="#faq">שאלות ותשובות</a>
+      <a href="#top">לראש הדף</a>
     </nav>
   </aside>
 
   <div class="wrap" id="top">
+    <main id="main">
+      <section class="hero" id="method">
+        <div>
+          <h1 id="heroH1">לומדים לבנות אתרים בעזרת AI</h1>
+          <p id="heroP">בונים אתר מושלם (גם אתר זה נבנה ללא ידע בשפות תכנות) – חינם וללא התחייבות.
+משחקים, מעצבים ויוצרים בעצמכם או יחד עם הילדים, עד שהתוצאה בדיוק כמו שחלמתם.
+רק כשתרצו לעלות את האתר לאוויר – תשלמו את העלות הקטנה של האחסון והדומיין.
+עד אז? הכול חוויה, יצירה וזמן איכות.</p>
 
-    <section class="hero" id="method">
-      <div>
-        <!-- ✅ כותרת קבועה, לא מתחלפת -->
-        <h1 id="heroH1">בונים אתר כמו זה — תוך דקות, בלי לדעת קוד</h1>
-        <p id="heroP">מצטרפים לקהילה, מתארים מה רוצים — מקבלים קוד מוכן ורצים מהטלפון עם Koder.</p>
-
-        <div class="strip">
-          <div class="card focus-zoom">
-            <img src="people-team.jpg" alt="צוות קוד" loading="lazy">
-            <div class="pad">
-              <h3>AI לצידך</h3>
-              <p>אתה כותב רעיון — ה-AI מייצר את הקוד.</p>
+          <div class="strip">
+            <div class="card focus-zoom">
+              <img src="1.jpg" alt="צוות קוד" loading="lazy">
+              <div class="pad">
+                <h3>בונים אתר אמיתי עם הילדים – חוויה חינמית עד העלייה לאוויר</h3>
+                <p>זמן איכות עם הילדים שלא שוכחים:
+בונים יחד אתר אמיתי, מעצבים, מתנסים וצוחקים.
+הכול חינמי עד שמחליטים לעלות לאוויר – אז נשאר רק התשלום הקטן על האחסון.</p>
+              </div>
             </div>
-          </div>
-          <div class="card focus-zoom">
-            <img src="people-blonde-senior.jpg" alt="שילוב דורות בקוד" loading="lazy">
-            <div class="pad">
-              <h3>קהילה יוצרת</h3>
-              <p>שואלים, משתפים ומתקדמים יחד.</p>
+            <div class="card focus-zoom">
+              <img src="2.jpg" alt="שילוב דורות בקוד" loading="lazy">
+              <div class="pad">
+                <h3>בונים אתר תדמית חינם – משלמים רק כשרוצים לעלות לאוויר</h3>
+                <p>בונים אתר תדמית מושלם – בלי לשלם אגורה. מתנסים, משחקים ומעצבים עד שזה נראה בדיוק כמו שאתם רוצים. כשתרצו לעלות לאוויר – רק אז תשלמו על האחסון והדומיין</p>
+              </div>
             </div>
-          </div>
-          <div class="card focus-zoom">
-            <img src="people-grandma-kid.jpg" alt="לימוד עם סבתא ונכד" loading="lazy">
-            <div class="pad">
-              <h3>מהר לטלפון</h3>
-              <p>עמוד נחיתה או כלי קטן — רץ מקומית מיד.</p>
+            <div class="card focus-zoom">
+              <img src="3.jpg" alt="לימוד עם סבתא ונכד" loading="lazy">
+              <div class="pad">
+                <h3>מהר לטלפון</h3>
+                <p>יש לכם רעיון לאתר? זה המקום לנסות אותו.
+אפליקציה לצילום תמונות שנמחקות אחרי 24 שעות, לוח שנה עברי נקי מפרסומות, משחק צבעוני שילמד ילדים לקרוא – כל חלום יכול להפוך למציאות.
+אתם מתנסים, מעצבים ובונים את הגרסה הראשונה של האתר בלי לשלם אגורה.
+כשתרצו להפוך את הרעיון למוצר חי באוויר – תשלמו רק על האחסון והדומיין.</p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div class="card focus-zoom">
-        <img src="bg-vibecode.jpg" alt="רקע וייב" loading="lazy">
-        <div class="pad">
-          <h3>מה השיטה?</h3>
-          <p>מבקשים מ-ChatGPT לבנות אתר HTML מקומי, מעתיקים את הקוד ומדביקים ב-Koder — וזה עובד בנייד.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ✅ קופסת דוגמאות מתחלפות (מופיעה למטה יותר) -->
-    <section class="card" id="examples-sec" style="margin-top:16px;">
-      <div class="pad">
-        <h3 style="margin:0 0 8px">מה אפשר לבנות? דוגמאות אמיתיות</h3>
-        <p id="examplesLine" class="swapfade lock-height" style="margin:0; color:var(--mut); font-size:16px;">
-          בעל מוסך? תן לילדים שלך לבנות עבורך אתר תדמית יוקרתי — היום.
-        </p>
-      </div>
-    </section>
-
-    <section id="gallery-sec">
-      <h2 style="margin:28px 0 8px">העבודות של הקהילה</h2>
-      <p style="margin:0; color:var(--mut)">הכול נבנה בעזרת AI — בלי לדעת שורת קוד אחת.</p>
-      <div class="gallery" id="gallery"></div>
-    </section>
-
-    <!-- מדריך וידאו -->
-    <section class="videos" id="videos-sec">
-      <h2>מדריך וידאו</h2>
-      <p style="color:#aab3d4">איך להוריד את Koder ולהריץ HTML מהטלפון.</p>
-
-      <div class="videogrid">
-        <div class="video-card">
-          <div class="video-wrap" id="tutorialWrap">
-            <video id="tutorialVideo"
-                   playsinline webkit-playsinline
-                   controls preload="metadata">
-              <source src="gallery/Tutorial-01.mov" type="video/quicktime">
-              הדפדפן לא תומך ב-MOV. <a href="gallery/Tutorial-01.mov">פתח/י את הקובץ</a>.
-            </video>
-          </div>
-          <div class="video-pad">
-            <h3>התקנת Koder ופתיחת HTML</h3>
-            <p>מדריך קצר: איך להוריד את Koder ולהריץ קבצי HTML ישירות מהטלפון.</p>
+        <div class="card focus-zoom">
+          <img src="bg-vibecode.jpg" alt="רקע וייב" loading="lazy">
+          <div class="pad">
+            <h3 id="how-method">מה השיטה?</h3>
+            <p>מבקשים מ-ChatGPT לבנות קובץ HTML מקומי, מעתיקים את הקוד ומדביקים באפליקציה שמריצה HTML — וזה עובד בנייד,
+               <strong>ללא ידע בשפת תכנות</strong>.</p>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- שאלות ותשובות -->
-    <section id="faq" style="margin-top:36px">
-      <h2>שאלות ותשובות</h2>
-      <div class="card" style="padding:0">
-        <details open style="padding:16px 20px; border-bottom:1px solid #ffffff14">
-          <summary style="cursor:pointer; font-weight:800">האם זה עובד גם בלי אינטרנט?</summary>
-          <div style="color:#aab3d4; margin-top:8px">כן. האתרים הם קבצי HTML מקומיים. צריך אינטרנט רק כדי לקבל את הקוד מ-ChatGPT בפעם הראשונה.</div>
-        </details>
-        <details style="padding:16px 20px; border-bottom:1px solid #ffffff14">
-          <summary style="cursor:pointer; font-weight:800">איפה שמים את הקבצים באייפון?</summary>
-          <div style="color:#aab3d4; margin-top:8px">בתוך Koder בתיקייה שתבחר/י. פותחים את ה-HTML ומריצים.</div>
-        </details>
-        <details style="padding:16px 20px">
-          <summary style="cursor:pointer; font-weight:800">אפשר לשתף עבודות בקהילה?</summary>
-          <div style="color:#aab3d4; margin-top:8px">בטח. לוחצים על “לקהילה” למעלה, שולחים צילום מסך וקובץ ה-HTML.</div>
-        </details>
-      </div>
-    </section>
+      <!-- גלריה -->
+      <section id="gallery-sec">
+        <h2 style="margin:1.75rem 0 .5rem">העבודות של הקהילה</h2>
+        <p style="margin:0; color:var(--mut)">הכול נבנה בעזרת AI — <strong>ללא ידע בשפת תכנות</strong>.</p>
+        <div class="gallery" id="gallery"></div>
+      </section>
 
-    <footer>© Vibecode.co.il — בנוי מקומית, רץ מקומית. אין שרת, יש קהילה.</footer>
+      <!-- מי אנחנו -->
+      <section id="about" style="margin-top:2.25rem">
+        <h2>מי אנחנו</h2>
+        <div class="card">
+          <div class="pad">
+            <p style="margin:0; color:#aab3d4">
+              Vibecode היא קהילה ישראלית של הורים, מחנכים ויוצרים שאוהבים לבנות דברים ביחד —
+              אתרי תדמית, משחקים וכלים קטנים שרצים מקומית בטלפון.
+              המטרה: להפוך רעיונות למשהו עובד, פשוט ומהיר,
+              <strong>ללא ידע בשפת תכנות</strong> וללא תשלום עד שמעלים לאוויר.
+              חולקים השראה, טיפים וקבצי HTML שניתן לפתוח בכל אפליקציית עריכת קוד בנייד.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- שאלות ותשובות -->
+      <section id="faq" style="margin-top:2.25rem">
+        <h2>שאלות ותשובות</h2>
+        <div class="card" style="padding:0">
+          <details open style="padding:1rem 1.25rem; border-bottom:1px solid var(--bd-weak)">
+            <summary style="cursor:pointer; font-weight:800">האם זה עובד גם בלי אינטרנט?</summary>
+            <div style="color:#aab3d4; margin-top:.5rem">כן. האתרים הם קבצי HTML מקומיים. צריך אינטרנט רק כדי לקבל את הקוד מ-ChatGPT בפעם הראשונה.</div>
+          </details>
+          <details style="padding:1rem 1.25rem; border-bottom:1px solid var(--bd-weak)">
+            <summary style="cursor:pointer; font-weight:800">איפה שמים את הקבצים באייפון?</summary>
+            <div style="color:#aab3d4; margin-top:.5rem">בתוך אפליקציית צפייה ב-HTML בתיקייה שתבחר/י. פותחים את ה-HTML ומריצים.</div>
+          </details>
+          <details style="padding:1rem 1.25rem">
+            <summary style="cursor:pointer; font-weight:800">אפשר לשתף עבודות בקהילה?</summary>
+            <div style="color:#aab3d4; margin-top:.5rem">בטח. לוחצים על “לקהילה” למטה, שולחים צילום מסך וקובץ ה-HTML.</div>
+          </details>
+        </div>
+      </section>
+    </main>
+
+    <footer>© Vibe-code.co.il — בנוי מקומית, רץ מקומית. אין שרת, יש קהילה.</footer>
   </div>
+
+  <!-- ✕ באותו מקום של הבורגר -->
+  <button class="close-fab" id="closeFab" aria-label="סגור תפריט">✕</button>
+
+  <!-- כפתור קהילה צף -->
+  <a class="cta-fab" href="https://t.me/vibecodeisrael/7" target="_blank" rel="noopener" aria-label="לקהילה">
+    <img src="telegram.png" alt="" />
+    <span>לקהילה</span>
+  </a>
+
+  <!-- ===== נגישות: כפתור צף + פאנל ===== -->
+  <button class="a11y-btn" id="a11yBtn" aria-label="פתח תפריט נגישות (Alt+0)" accesskey="0" title="נגישות (Alt+0)">
+    <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+      <path fill="currentColor" d="M12 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8.9 6.6c-.3-.7-1.1-1-1.8-.7l-4.6 1.6H9.5L4.9 7.9c-.7-.3-1.5 0-1.8.7-.3.7 0 1.5.7 1.8l4.6 1.6v8.2c0 .8.7 1.4 1.5 1.4.8 0 1.5-.6 1.5-1.4V16h1.2v4.2c0 .8.7 1.4 1.5 1.4.8 0 1.5-.6 1.5-1.4v-8.2l4.6-1.6c.7-.3 1-1.1.7-1.8Z"/>
+    </svg>
+  </button>
+
+  <div class="a11y-backdrop" id="a11yBack"></div>
+
+  <aside class="a11y-panel" id="a11yPanel" role="dialog" aria-modal="true" aria-labelledby="a11yTitle" aria-hidden="true">
+    <div class="a11y-head">
+      <h2 class="a11y-title" id="a11yTitle">תפריט נגישות</h2>
+      <button class="a11y-close" id="a11yClose" aria-label="סגור תפריט נגישות">✕</button>
+    </div>
+    <div class="a11y-body">
+      <div class="a11y-group" aria-labelledby="grpText">
+        <h3 id="grpText">טקסט</h3>
+        <div class="a11y-row">
+          <button class="a11y-btn2" data-act="font--">הקטן טקסט</button>
+          <button class="a11y-btn2" data-act="font++">הגדל טקסט</button>
+          <button class="a11y-btn2" data-act="font=1">איפוס גודל</button>
+        </div>
+      </div>
+
+      <div class="a11y-group" aria-labelledby="grpToggles">
+        <h3 id="grpToggles">תצוגה</h3>
+        <label class="a11y-switch"><input type="checkbox" data-toggle="hc"> ניגודיות גבוהה</label>
+        <label class="a11y-switch"><input type="checkbox" data-toggle="underline"> קו תחתון לכל הקישורים</label>
+        <label class="a11y-switch"><input type="checkbox" data-toggle="focus"> הדגשת פוקוס (ניווט מקלדת)</label>
+        <label class="a11y-switch"><input type="checkbox" data-toggle="rm"> הפחתת אנימציות</label>
+        <label class="a11y-switch"><input type="checkbox" data-toggle="dys"> פונט קריא (OpenDyslexic אם קיים)</label>
+      </div>
+
+      <div class="a11y-group" aria-labelledby="grpHelp">
+        <h3 id="grpHelp">מידע נגישות</h3>
+        <p style="margin:0; color:#aab3d4">קיצור לפתיחת התפריט: <strong>Alt+0</strong>. לעזרה נוספת—ראו הצהרת הנגישות.</p>
+      </div>
+    </div>
+    <div class="a11y-footer">
+      <a class="a11y-link" href="accessibility-statement.html" target="_blank" rel="noopener">הצהרת נגישות</a>
+      <button class="a11y-btn2" data-act="reset">איפוס כל ההגדרות</button>
+    </div>
+  </aside>
 
 <script>
   /* ===== Drawer ===== */
   const burgerBtn   = document.getElementById('burgerBtn');
   const drawer      = document.getElementById('drawer');
   const drawerBack  = document.getElementById('drawerBack');
-  const drawerClose = document.getElementById('drawerClose');
+  const closeFab    = document.getElementById('closeFab');
+
+  function positionCloseFab(){
+    const r = burgerBtn.getBoundingClientRect();
+    closeFab.style.left = r.left + 'px';
+    closeFab.style.top  = (r.top + r.height/2) + 'px';
+    closeFab.style.transform = 'translateY(-50%)';
+  }
 
   function openDrawer(){
     drawer.classList.add('open');
     drawer.setAttribute('aria-hidden','false');
     burgerBtn.setAttribute('aria-expanded','true');
+
     drawerBack.classList.add('show');
-    document.body.classList.add('menu-open');           // מזיז את הדף שמאלה
-    document.documentElement.style.overflow = 'hidden'; // חוסם גלילה מאחור
+    document.documentElement.style.overflow = 'hidden';
+
+    burgerBtn.style.visibility = 'hidden';
+    positionCloseFab();
+    closeFab.style.display = 'grid';
+
+    window.addEventListener('resize', onViewportChange);
+    window.addEventListener('orientationchange', onViewportChange);
   }
+
   function closeDrawer(){
     drawer.classList.remove('open');
     drawer.setAttribute('aria-hidden','true');
     burgerBtn.setAttribute('aria-expanded','false');
-    drawerBack.classList.remove('show');
-    document.body.classList.remove('menu-open');        // מחזיר את הדף
-    document.documentElement.style.overflow = '';
+
+    const onEnd = (e)=>{
+      if(e.propertyName !== 'transform') return;
+      drawer.removeEventListener('transitionend', onEnd);
+      drawerBack.classList.remove('show');
+      document.documentElement.style.overflow = '';
+      burgerBtn.style.visibility = '';
+      closeFab.style.display = 'none';
+      window.removeEventListener('resize', onViewportChange);
+      window.removeEventListener('orientationchange', onViewportChange);
+    };
+    drawer.addEventListener('transitionend', onEnd);
+  }
+
+  function onViewportChange(){
+    if (drawer.classList.contains('open')) positionCloseFab();
   }
 
   burgerBtn?.addEventListener('click', openDrawer);
+  closeFab?.addEventListener('click', closeDrawer);
   drawerBack?.addEventListener('click', closeDrawer);
-  drawerClose?.addEventListener('click', closeDrawer);
-  drawer?.querySelectorAll('a').forEach(a=> a.addEventListener('click', closeDrawer));
   window.addEventListener('keydown', e=>{ if(e.key==='Escape') closeDrawer(); });
+  drawer?.querySelectorAll('a').forEach(a=> a.addEventListener('click', closeDrawer));
 
-  /* ===== גלריה (דמו) ===== */
+  /* ===== גלריה דמו ===== */
   const galleryDefaults = [
     {src:'gallery/site-04.jpg', title:'יומן עברי לועזי'},
     {src:'gallery/site-01.jpg', title:'המרת מטבע'},
@@ -423,69 +581,102 @@
   }
   galleryDefaults.forEach(({src,title})=> addImageSmart(src,title));
 
-  /* ===== וידאו: יחס מסך ===== */
-  (function videoAspect(){
-    const wrap = document.getElementById('tutorialWrap');
-    const vid  = document.getElementById('tutorialVideo');
-    if(!wrap || !vid) return;
-    function updateAspect(){
-      const w = vid.videoWidth || 0, h = vid.videoHeight || 0;
-      if (!w || !h) return;
-      wrap.classList.remove('portrait','landscape','square');
-      if (h > w) wrap.classList.add('portrait'); else if (w > h) wrap.classList.add('landscape'); else wrap.classList.add('square');
+  /* ===== נגישות: לוגיקה ===== */
+  const a11yBtn   = document.getElementById('a11yBtn');
+  const a11yBack  = document.getElementById('a11yBack');
+  const a11yPanel = document.getElementById('a11yPanel');
+  const a11yClose = document.getElementById('a11yClose');
+
+  const state = {
+    zoom: parseFloat(localStorage.getItem('a11y.zoom')) || 1,
+    hc:   localStorage.getItem('a11y.hc') === '1',
+    underline: localStorage.getItem('a11y.underline') === '1',
+    focus: localStorage.getItem('a11y.focus') === '1',
+    rm:    localStorage.getItem('a11y.rm') === '1',
+    dys:   localStorage.getItem('a11y.dys') === '1'
+  };
+
+  function applyState(){
+    document.documentElement.style.setProperty('--zoom', Math.min(Math.max(state.zoom, 0.8), 2).toString());
+    document.body.classList.toggle('a11y-hc', state.hc);
+    document.body.classList.toggle('a11y-underline', state.underline);
+    document.body.classList.toggle('a11y-focus', state.focus);
+    document.body.classList.toggle('a11y-rm', state.rm);
+    document.body.classList.toggle('a11y-dys', state.dys);
+
+    // עדכון צ'קבוקסים
+    a11yPanel.querySelectorAll('input[type="checkbox"][data-toggle]').forEach(chk=>{
+      const k = chk.getAttribute('data-toggle');
+      chk.checked = !!state[k];
+    });
+  }
+  applyState();
+
+  function openA11y(){
+    a11yPanel.classList.add('open');
+    a11yPanel.setAttribute('aria-hidden','false');
+    a11yBack.classList.add('show');
+    document.documentElement.style.overflow = 'hidden';
+    prevFocus = document.activeElement;
+    setTimeout(()=>{
+      const first = a11yPanel.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      first?.focus();
+    }, 0);
+  }
+  function closeA11y(){
+    a11yPanel.classList.remove('open');
+    a11yPanel.setAttribute('aria-hidden','true');
+    a11yBack.classList.remove('show');
+    document.documentElement.style.overflow = '';
+    prevFocus?.focus();
+  }
+  let prevFocus = null;
+
+  a11yBtn.addEventListener('click', openA11y);
+  a11yBack.addEventListener('click', closeA11y);
+  a11yClose.addEventListener('click', closeA11y);
+  window.addEventListener('keydown', e=>{
+    if(e.key==='Escape' && a11yPanel.classList.contains('open')) closeA11y();
+    // Alt+0 פותח תפריט נגישות
+    if((e.altKey || e.metaKey) && (e.key==='0' || e.code==='Digit0')){ e.preventDefault(); openA11y(); }
+  });
+
+  // כפתורי שינוי גודל/איפוס
+  a11yPanel.addEventListener('click', (e)=>{
+    const b = e.target.closest('button.a11y-btn2');
+    if(!b) return;
+    const act = b.getAttribute('data-act');
+    if(act==='font++'){ state.zoom = +(state.zoom + 0.1).toFixed(2); localStorage.setItem('a11y.zoom', state.zoom); }
+    else if(act==='font--'){ state.zoom = +(state.zoom - 0.1).toFixed(2); localStorage.setItem('a11y.zoom', state.zoom); }
+    else if(act==='font=1'){ state.zoom = 1; localStorage.setItem('a11y.zoom', state.zoom); }
+    else if(act==='reset'){
+      ['zoom','hc','underline','focus','rm','dys'].forEach(k=> localStorage.removeItem('a11y.'+k));
+      state.zoom=1; state.hc=false; state.underline=false; state.focus=false; state.rm=false; state.dys=false;
     }
-    vid.addEventListener('loadedmetadata', updateAspect);
-    if (vid.readyState >= 1) updateAspect();
-  })();
+    applyState();
+  });
 
-  /* ===== כותרת ה-Hero קבועה – אין רוטציה ===== */
-  // השארנו את ה-H1 וה-P סטטיים לפי הבקשה.
-
-  /* ===== דוגמאות מתחלפות למטה ===== */
-  (function rotatingExamples(){
-    const el = document.getElementById('examplesLine');
-    if(!el) return;
-
-    const lines = [
-      'בעל מוסך? תן לילדים שלך לבנות עבורך אתר תדמית יוקרתי — היום.',
-      'מאפייה שכונתית? עמוד הזמנות יומי עם תפריט מתעדכן — תוך דקות.',
-      'מדריכת יוגה? מערכת שיעורים ולוח זמנים שנפתחים בלחיצה.',
-      'מאמן/ת כושר? דף נחיתה עם טופס לידים ותמחור חבילות.',
-      'ועד בית? אתר בניין עם טפסים, קבצים ועידכונים לדיירים.',
-      'צלם/ת אירועים? גלריית עבודות מרהיבה עם שיתוף מהיר לוואטסאפ.',
-      'קוסמטיקאית? תיאום תורים, מפת הגעה וקופונים ללקוחות חוזרים.',
-      'נגר/ית? קטלוג עבודות עם יצירת קשר בלחיצה — מהנייד.',
-      'חנות יד שנייה? רשימת מוצרים פשוטה עם תמונות ומחירים.',
-      'מדריך/ת פרטית? עמוד “עליי”, מחירים וטופס יצירת קשר מיידי.'
-    ];
-
-    // נועלים גובה כדי שלא "יקפוץ" כשמשתנה הטקסט
-    function lockMaxHeight(node, options){
-      const probe = document.createElement('div');
-      const cs = getComputedStyle(node);
-      probe.style.cssText = `
-        position:absolute; visibility:hidden; z-index:-1; inset:auto;
-        width:${node.clientWidth || node.offsetWidth || 0}px;
-        font:${cs.fontStyle} ${cs.fontVariant} ${cs.fontWeight} ${cs.fontSize}/${cs.lineHeight} ${cs.fontFamily};
-      `;
-      document.body.appendChild(probe);
-      let maxH = node.offsetHeight;
-      options.forEach(t=>{ probe.textContent = t; maxH = Math.max(maxH, probe.offsetHeight); });
-      document.body.removeChild(probe);
-      node.style.minHeight = maxH + 'px';
+  // מתגים (צ'קבוקסים)
+  a11yPanel.addEventListener('change', (e)=>{
+    const chk = e.target;
+    if(chk.matches('input[type="checkbox"][data-toggle]')){
+      const k = chk.getAttribute('data-toggle');
+      state[k] = chk.checked;
+      localStorage.setItem('a11y.'+k, chk.checked ? '1' : '0');
+      applyState();
     }
-    lockMaxHeight(el, lines);
+  });
 
-    let i = 0;
-    setInterval(()=>{
-      el.classList.add('is-fading');
-      setTimeout(()=>{
-        i = (i + 1) % lines.length;
-        el.textContent = lines[i];
-        el.classList.remove('is-fading');
-      }, 220);
-    }, 4200);
-  })();
+  // מלכודת טאב בדיאלוג
+  a11yPanel.addEventListener('keydown', (e)=>{
+    if(e.key !== 'Tab') return;
+    const focusables = a11yPanel.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    const list = Array.from(focusables).filter(el=>!el.hasAttribute('disabled'));
+    if(!list.length) return;
+    const first = list[0], last = list[list.length-1];
+    if(e.shiftKey && document.activeElement === first){ last.focus(); e.preventDefault(); }
+    else if(!e.shiftKey && document.activeElement === last){ first.focus(); e.preventDefault(); }
+  });
 </script>
 </body>
 </html>
